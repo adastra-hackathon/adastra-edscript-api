@@ -149,4 +149,79 @@ npm run docker:setup
 
 ---
 
+### Deploy em Produção (VPS)
+
+**1. Clonar/atualizar o repositório**
+```bash
+git pull origin main
+```
+
+**2. Criar o `.env` com os valores de produção**
+```bash
+cp .env.example .env
+nano .env
+```
+```env
+NODE_ENV=production
+PORT=3008
+
+DB_USER=postgres
+DB_PASSWORD=sua_senha_segura
+DB_NAME=adastra_edscript
+DATABASE_URL="postgresql://postgres:sua_senha_segura@postgres:5432/adastra_edscript"
+
+JWT_SECRET=sua_chave_jwt_longa_e_aleatoria
+JWT_EXPIRES_IN=15m
+JWT_REFRESH_SECRET=sua_chave_refresh_longa_e_aleatoria
+JWT_REFRESH_EXPIRES_IN=7d
+```
+
+**3. Subir os containers**
+```bash
+docker compose up --build -d
+```
+
+**4. Aplicar as migrations**
+```bash
+docker compose exec api npx prisma migrate deploy
+```
+> Use sempre `migrate deploy` em produção — aplica as migrations existentes sem criar novas.
+
+**5. Popular o banco (seed)**
+```bash
+docker compose exec api npx tsx prisma/seed.ts
+```
+> Verifique se o seed usa `upsert` antes de rodar em produção para evitar duplicatas.
+
+**6. Nginx — proxy para a API**
+```nginx
+server {
+    listen 80;
+    server_name api.seudominio.com;
+
+    location / {
+        proxy_pass http://localhost:3008;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+**7. SSL**
+```bash
+certbot --nginx -d api.seudominio.com
+```
+
+**Para deploys futuros:**
+```bash
+git pull
+docker compose up --build -d
+docker compose exec api npx prisma migrate deploy
+```
+
+---
+
 🔗 Repositório do App mobile (React Native) disponível [aqui](https://github.com/adastra-hackathon/adastra-edscript)
