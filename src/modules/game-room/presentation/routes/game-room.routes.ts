@@ -341,6 +341,6 @@ router.post('/:id/finish', authenticate, (req, res, next) => ctrl.finish(req as 
  *       200:
  *         description: Bots added
  */
-router.post('/:id/add-bots', authenticate, (req, res, next) => ctrl.addBots(req as any, res, next).catch(next));
+router.post('/:id/add-bots', authenticate, (req, res, next) => ctrl.addBots(req as any, res).catch(next));
 
 export default router;
