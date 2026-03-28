@@ -74,44 +74,56 @@ git clone https://github.com/issagomesdev/edscript.git
 cd edscript/api-edscript
 ```
 
-### Copie o arquivo de exemplo e configure as variáveis `cp .env.example .env`
+### Copie o arquivo de exemplo e configure as variáveis
+
 ```bash
-PORT=3000
-...
+cp .env.example .env
 ```
-### Suba o container
+
+### Ambiente de desenvolvimento
+
+O projeto usa `docker-compose.dev.yml` para desenvolvimento — container com todas as dependências instaladas (incluindo `prisma` CLI) e hot reload via `ts-node-dev`.
+
+**Suba o container de dev:**
 ```bash
-docker compose up -d
+docker compose -f docker-compose.dev.yml up --build -d
 # API disponível em http://localhost:3000
 # Swagger UI em http://localhost:3000/docs
 ```
 
-### Configure o banco de dados
-
-> **Importante:** os comandos `docker:*` rodam dentro do container e usam o host `postgres` (correto para Docker).
-> Os comandos `db:*` rodam localmente e exigem `DATABASE_URL` apontando para `localhost`.
-
-**Primeira vez (reset + seed):**
+**Migrations (dev):**
 ```bash
-npm run docker:setup
+docker compose -f docker-compose.dev.yml exec api npx prisma migrate dev --name nome-da-migration
 ```
 
-**Após criar ou alterar o schema (nova migration):**
+**Seed:**
 ```bash
-npm run docker:migrate
-# ou com nome descritivo:
-docker compose exec api npx prisma migrate dev --name nome-da-migration
+docker compose -f docker-compose.dev.yml exec api npx tsx prisma/seed.ts
 ```
 
-**Apenas repopular dados (seed):**
+**Reset completo + seed (apaga todos os dados):**
 ```bash
-npm run docker:seed
+docker compose -f docker-compose.dev.yml down -v
+docker compose -f docker-compose.dev.yml up -d
+docker compose -f docker-compose.dev.yml exec api npx prisma migrate dev --name init
+docker compose -f docker-compose.dev.yml exec api npx tsx prisma/seed.ts
 ```
 
-**Reset completo + seed (cuidado: apaga todos os dados):**
-```bash
-npm run docker:setup
-```
+---
+
+### Migrations e Seed
+
+| Ambiente | Comando | Migrations | Seed |
+|---|---|---|---|
+| **Dev** | `docker compose -f docker-compose.dev.yml` | `exec api npx prisma migrate dev` | `exec api npx tsx prisma/seed.ts` |
+| **Produção** | `docker compose` | `exec api npx prisma migrate deploy` | `exec api npx tsx prisma/seed.ts` |
+
+> `migrate dev` cria novas migrations a partir de alterações no schema — use apenas em desenvolvimento.
+> `migrate deploy` aplica as migrations existentes sem criar novas — use sempre em produção.
+
+> `migrate dev` cria novas migrations a partir de alterações no schema.
+> `migrate deploy` apenas aplica as migrations existentes — use sempre em produção.
+> Em produção, rode o seed apenas na primeira vez ou se ele usar `upsert` para evitar duplicatas.
 
 ---
 

@@ -1,3 +1,19 @@
+# Dev stage
+FROM node:20-alpine AS dev
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci --legacy-peer-deps
+
+COPY tsconfig.json ./
+COPY prisma ./prisma
+COPY src ./src
+
+RUN npx prisma generate
+
+CMD ["npm", "run", "dev"]
+
 # Build stage
 FROM node:20-alpine AS builder
 

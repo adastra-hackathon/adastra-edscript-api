@@ -13,7 +13,9 @@ services:
     restart: unless-stopped
 
   api:
-    build: .
+    build:
+      context: .
+      target: dev
     container_name: adastra_api
     ports:
       - "${PORT}:${PORT}"
@@ -23,6 +25,7 @@ services:
       - postgres
     restart: unless-stopped
     volumes:
+      - ./src:/app/src
       - ./prisma:/app/prisma
 
 volumes:
