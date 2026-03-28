@@ -149,4 +149,4 @@ npm run docker:setup
 
 ---
 
-🔗 Repositório do App mobile (React Native) disponível [aqui](#)
+🔗 Repositório do App mobile (React Native) disponível [aqui]([#](https://github.com/adastra-hackathon/adastra-edscript))
