@@ -19,9 +19,9 @@ function makeRoom(overrides: Partial<GameRoomData> = {}): GameRoomData {
     createdAt: new Date(),
     updatedAt: new Date(),
     players: [
-      { id: 'p1', roomId: 'room-1', userId: 'user-1', initialBalance: 100, finalBalance: null, profit: null, position: null, joinedAt: new Date() },
-      { id: 'p2', roomId: 'room-1', userId: 'user-2', initialBalance: 100, finalBalance: null, profit: null, position: null, joinedAt: new Date() },
-      { id: 'p3', roomId: 'room-1', userId: 'user-3', initialBalance: 100, finalBalance: null, profit: null, position: null, joinedAt: new Date() },
+      { id: 'p1', roomId: 'room-1', userId: 'user-1', isBot: false, displayName: null, initialBalance: 100, finalBalance: null, profit: null, position: null, joinedAt: new Date() },
+      { id: 'p2', roomId: 'room-1', userId: 'user-2', isBot: false, displayName: null, initialBalance: 100, finalBalance: null, profit: null, position: null, joinedAt: new Date() },
+      { id: 'p3', roomId: 'room-1', userId: 'user-3', isBot: false, displayName: null, initialBalance: 100, finalBalance: null, profit: null, position: null, joinedAt: new Date() },
     ],
     ...overrides,
   };

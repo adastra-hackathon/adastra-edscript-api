@@ -44,6 +44,7 @@ const baseDTO: CreateGameRoomDTO = {
   entryAmount: 20,
   maxPlayers: 10,
   duration: 300,
+  isSimulation: false,
 };
 
 describe('CreateGameRoomUseCase', () => {

@@ -68,8 +68,8 @@ describe('JoinGameRoomUseCase', () => {
 
   it('throws GAME_ROOM_FULL when room is at max capacity', async () => {
     const players = [
-      { id: 'p1', roomId: 'room-1', userId: 'user-a', initialBalance: 100, finalBalance: null, profit: null, position: null, joinedAt: new Date() },
-      { id: 'p2', roomId: 'room-1', userId: 'user-b', initialBalance: 100, finalBalance: null, profit: null, position: null, joinedAt: new Date() },
+      { id: 'p1', roomId: 'room-1', userId: 'user-a', isBot: false, displayName: null, initialBalance: 100, finalBalance: null, profit: null, position: null, joinedAt: new Date() },
+      { id: 'p2', roomId: 'room-1', userId: 'user-b', isBot: false, displayName: null, initialBalance: 100, finalBalance: null, profit: null, position: null, joinedAt: new Date() },
     ];
     const repo = makeRepo({ findById: jest.fn().mockResolvedValue(makeRoom({ maxPlayers: 2, players })) });
     const useCase = new JoinGameRoomUseCase(repo);
@@ -79,7 +79,7 @@ describe('JoinGameRoomUseCase', () => {
 
   it('throws GAME_ROOM_ALREADY_JOINED when user is already in the room', async () => {
     const players = [
-      { id: 'p1', roomId: 'room-1', userId: 'user-1', initialBalance: 100, finalBalance: null, profit: null, position: null, joinedAt: new Date() },
+      { id: 'p1', roomId: 'room-1', userId: 'user-1', isBot: false, displayName: null, initialBalance: 100, finalBalance: null, profit: null, position: null, joinedAt: new Date() },
     ];
     const repo = makeRepo({ findById: jest.fn().mockResolvedValue(makeRoom({ maxPlayers: 5, players })) });
     const useCase = new JoinGameRoomUseCase(repo);
