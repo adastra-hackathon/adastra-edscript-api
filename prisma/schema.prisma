@@ -1,0 +1,436 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  PLAYER
+  ADMIN
+  SUPPORT
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  BANNED
+  PENDING_VERIFICATION
+}
+
+enum UserLevel {
+  BRONZE
+  PRATA
+  OURO
+  DIAMANTE
+  VIP
+}
+
+enum VerificationCodeType {
+  EMAIL_VERIFICATION
+  PHONE_VERIFICATION
+  PASSWORD_RESET
+}
+
+enum TermType {
+  TERMS_OF_SERVICE
+  PRIVACY_POLICY
+  RESPONSIBLE_GAMING
+  BONUS_TERMS
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+model User {
+  id              String     @id @default(uuid())
+  email           String     @unique
+  cpf             String     @unique
+  phone           String     @unique
+  birthDate       DateTime
+  role            UserRole   @default(PLAYER)
+  status          UserStatus @default(PENDING_VERIFICATION)
+  isEmailVerified Boolean    @default(false)
+  isPhoneVerified Boolean    @default(false)
+  lastLoginAt     DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  deletedAt       DateTime?
+
+  profile          UserProfile?
+  credential       UserCredential?
+  sessions         UserSession[]
+  verificationCodes VerificationCode[]
+  termsAcceptances UserTermsAcceptance[]
+  wallet           Wallet?
+  gamingLimits     UserGamingLimit[]
+  exclusion        UserExclusion?
+  favorites        Favorite[]
+  recentGames      RecentGame[]
+  betSlips         BetSlip[]
+
+  @@map("users")
+}
+
+model UserProfile {
+  id          String    @id @default(uuid())
+  userId      String    @unique
+  fullName    String
+  displayName String?
+  avatarUrl   String?
+  gender      String?
+  address     String?
+  level       UserLevel @default(BRONZE)
+  points      Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user                   User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notificationPreference UserNotificationPreference?
+
+  @@map("user_profiles")
+}
+
+model UserNotificationPreference {
+  id                    String   @id @default(uuid())
+  profileId             String   @unique
+  emailOnDeposit        Boolean  @default(true)
+  emailOnWithdrawal     Boolean  @default(true)
+  checkIntervalMinutes  Int?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  profile UserProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@map("user_notification_preferences")
+}
+
+model UserCredential {
+  id                  String    @id @default(uuid())
+  userId              String    @unique
+  passwordHash        String
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_credentials")
+}
+
+model UserSession {
+  id               String    @id @default(uuid())
+  userId           String
+  refreshTokenHash String    @unique
+  deviceName       String?
+  ipAddress        String?
+  userAgent        String?
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  createdAt        DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_sessions")
+}
+
+model VerificationCode {
+  id        String               @id @default(uuid())
+  userId    String
+  type      VerificationCodeType
+  codeHash  String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime             @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("verification_codes")
+}
+
+model UserTermsAcceptance {
+  id          String   @id @default(uuid())
+  userId      String
+  termType    TermType
+  termVersion String
+  acceptedAt  DateTime @default(now())
+  ipAddress   String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_terms_acceptances")
+}
+
+model Wallet {
+  id                String   @id @default(uuid())
+  userId            String   @unique
+  balanceAmount     Decimal  @default(0) @db.Decimal(18, 2)
+  bonusBalanceAmount Decimal @default(0) @db.Decimal(18, 2)
+  currency          String   @default("BRL")
+  isLocked          Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("wallets")
+}
+
+// ─── Games & Home ─────────────────────────────────────────────────────────────
+
+enum GameType {
+  CASINO
+  LIVE_CASINO
+}
+
+model Provider {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  logoUrl   String?
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  games Game[]
+
+  @@map("providers")
+}
+
+model GameCategory {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  icon      String?
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  games GameCategoryRelation[]
+
+  @@map("game_categories")
+}
+
+model Game {
+  id            String   @id @default(uuid())
+  name          String
+  slug          String   @unique
+  providerId    String
+  imageUrl      String?
+  type          GameType
+  isActive      Boolean  @default(true)
+  isPopular     Boolean  @default(false)
+  isNew         Boolean  @default(false)
+  sortOrder     Int      @default(0)
+  description   String?
+  rtp           Float?
+  volatility    String?
+  minBet        Float?
+  maxBet        Float?
+  dealerName    String?
+  playersCount  Int?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  provider    Provider               @relation(fields: [providerId], references: [id])
+  categories  GameCategoryRelation[]
+  favorites   Favorite[]
+  recentGames RecentGame[]
+
+  @@map("games")
+}
+
+model GameCategoryRelation {
+  gameId     String
+  categoryId String
+
+  game     Game         @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  category GameCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([gameId, categoryId])
+  @@map("game_category_relations")
+}
+
+model Banner {
+  id             String    @id @default(uuid())
+  title          String?
+  subtitle       String?
+  imageUrl       String
+  mobileImageUrl String?
+  redirectType   String?
+  redirectValue  String?
+  sortOrder      Int       @default(0)
+  isActive       Boolean   @default(true)
+  startsAt       DateTime?
+  endsAt         DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@map("banners")
+}
+
+model HomeShortcut {
+  id            String   @id @default(uuid())
+  title         String
+  imageUrl      String?
+  redirectType  String?
+  redirectValue String?
+  sortOrder     Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  @@map("home_shortcuts")
+}
+
+// ─── Favorites & Recents ──────────────────────────────────────────────────────
+
+model Favorite {
+  id        String   @id @default(uuid())
+  userId    String
+  gameId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, gameId])
+  @@map("favorites")
+}
+
+model RecentGame {
+  id           String   @id @default(uuid())
+  userId       String
+  gameId       String
+  lastPlayedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, gameId])
+  @@map("recent_games")
+}
+
+// ─── Sports ───────────────────────────────────────────────────────────────────
+
+model SportsMatch {
+  id          String   @id @default(uuid())
+  sport       String
+  league      String
+  homeTeam    String
+  awayTeam    String
+  homeLogoUrl String?
+  awayLogoUrl String?
+  startTime   DateTime
+  isLive      Boolean  @default(false)
+  oddsHome    Float
+  oddsDraw    Float
+  oddsAway    Float
+  homeScore   Int?
+  awayScore   Int?
+  minute      Int?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@map("sports_matches")
+}
+
+// ─── Responsible Gaming ────────────────────────────────────────────────────────
+
+enum GamingLimitType {
+  BET_AMOUNT
+  DEPOSIT_AMOUNT
+  TIME_ON_SITE
+}
+
+enum ExclusionType {
+  TIMED
+  AUTO
+}
+
+model UserGamingLimit {
+  id             String          @id @default(uuid())
+  userId         String
+  type           GamingLimitType
+  dailyLimit     Decimal?        @db.Decimal(18, 2)
+  weeklyLimit    Decimal?        @db.Decimal(18, 2)
+  monthlyLimit   Decimal?        @db.Decimal(18, 2)
+  reason         String?
+  lastActivityAt DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type])
+  @@map("user_gaming_limits")
+}
+
+model UserExclusion {
+  id             String        @id @default(uuid())
+  userId         String        @unique
+  type           ExclusionType
+  excludeUntil   DateTime?
+  autoPeriod     String?
+  reason         String?
+  lastActivityAt DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_exclusions")
+}
+
+// ─── Betslip ───────────────────────────────────────────────────────────────────
+
+enum BetslipType {
+  SIMPLE
+  MULTIPLE
+  SYSTEM
+}
+
+enum BetslipStatus {
+  DRAFT
+  SUBMITTED
+  SETTLED
+  CANCELLED
+}
+
+model BetSlip {
+  id                    String        @id @default(uuid())
+  userId                String
+  type                  BetslipType   @default(MULTIPLE)
+  status                BetslipStatus @default(DRAFT)
+  totalStake            Decimal       @default(0) @db.Decimal(18, 2)
+  totalOdds             Decimal       @default(1) @db.Decimal(10, 4)
+  potentialPayout       Decimal       @default(0) @db.Decimal(18, 2)
+  acceptAnyOddsChange   Boolean       @default(false)
+  acceptOnlyHigherOdds  Boolean       @default(false)
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  selections BetSlipSelection[]
+
+  @@map("bet_slips")
+}
+
+model BetSlipSelection {
+  id             String   @id @default(uuid())
+  betSlipId      String
+  eventId        String
+  eventName      String
+  marketName     String
+  selectionName  String
+  odd            Decimal  @db.Decimal(10, 4)
+  stake          Decimal? @db.Decimal(18, 2)
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  betSlip BetSlip @relation(fields: [betSlipId], references: [id], onDelete: Cascade)
+
+  @@map("bet_slip_selections")
+}
