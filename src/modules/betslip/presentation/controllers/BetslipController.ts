@@ -30,33 +30,37 @@ export class BetslipController {
   }
 
   async getById(req: AuthenticatedRequest, res: Response): Promise<void> {
-    const result = await new GetBetslipUseCase(this.repo()).execute(req.params.id, req.userId);
+    const id = req.params.id as string;
+    const result = await new GetBetslipUseCase(this.repo()).execute(id, req.userId);
     res.json({ success: true, data: result });
   }
 
   async update(req: AuthenticatedRequest, res: Response): Promise<void> {
     const parsed = UpdateBetslipSchema.safeParse(req.body);
     if (!parsed.success) throw new AppError('VALIDATION_ERROR');
-    const result = await new UpdateBetslipUseCase(this.repo()).execute(req.params.id, req.userId, parsed.data);
+    const id = req.params.id as string;
+    const result = await new UpdateBetslipUseCase(this.repo()).execute(id, req.userId, parsed.data);
     res.json({ success: true, data: result });
   }
 
   async submit(req: AuthenticatedRequest, res: Response): Promise<void> {
-    const result = await new SubmitBetslipUseCase(this.repo()).execute(req.params.id, req.userId);
+    const id = req.params.id as string;
+    const result = await new SubmitBetslipUseCase(this.repo()).execute(id, req.userId);
     res.json({ success: true, data: result });
   }
 
   async removeSelection(req: AuthenticatedRequest, res: Response): Promise<void> {
     const result = await new RemoveSelectionUseCase(this.repo()).execute(
-      req.params.id,
-      req.params.selectionId,
+      req.params.id as string,
+      req.params.selectionId as string,
       req.userId,
     );
     res.json({ success: true, data: result });
   }
 
   async clear(req: AuthenticatedRequest, res: Response): Promise<void> {
-    const result = await new ClearBetslipUseCase(this.repo()).execute(req.params.id, req.userId);
+    const id = req.params.id as string;
+    const result = await new ClearBetslipUseCase(this.repo()).execute(id, req.userId);
     res.json({ success: true, data: result });
   }
 }
