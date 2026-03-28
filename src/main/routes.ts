@@ -8,6 +8,8 @@ import favoritesRoutes from '../modules/favorites/presentation/routes/favorites.
 import recentGamesRoutes from '../modules/recent-games/presentation/routes/recent-games.routes';
 import sportsRoutes from '../modules/sports/presentation/routes/sports.routes';
 import betslipRoutes from '../modules/betslip/presentation/routes/betslip.routes';
+import gameRoomRoutes from '../modules/game-room/presentation/routes/game-room.routes';
+import predictionRoomRoutes from '../modules/prediction/presentation/routes/prediction-room.routes';
 
 const router = Router();
 
@@ -20,5 +22,7 @@ router.use('/', favoritesRoutes);
 router.use('/', recentGamesRoutes);
 router.use('/sports', sportsRoutes);
 router.use('/betslips', betslipRoutes);
+router.use('/game-rooms', gameRoomRoutes);
+router.use('/prediction-rooms', predictionRoomRoutes);
 
 export { router };

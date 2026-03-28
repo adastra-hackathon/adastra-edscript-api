@@ -304,6 +304,84 @@ async function main() {
   await prisma.sportsMatch.createMany({ data: matchDefs });
   console.log(`✅ ${matchDefs.length} sports matches`);
 
+  // ── Game Rooms — Duelo (demo seed) ────────────────────────────────────────
+
+  const admin = await prisma.user.findUnique({ where: { email: adminEmail } });
+  const firstGame = await prisma.game.findFirst({ orderBy: { sortOrder: 'asc' } });
+
+  if (admin && firstGame) {
+    const existingRooms = await prisma.gameRoom.count();
+    if (existingRooms === 0) {
+      await prisma.gameRoom.create({
+        data: {
+          hostId: admin.id,
+          gameId: firstGame.id,
+          entryAmount: 20,
+          maxPlayers: 6,
+          duration: 300,
+          isSimulation: true,
+          status: 'WAITING',
+        },
+      });
+      console.log('✅ 1 game room (Duelo demo)');
+    }
+
+    // ── Prediction Rooms — Apostas (demo seed) ───────────────────────────────
+
+    const existingPredictionRooms = await prisma.predictionRoom.count();
+    if (existingPredictionRooms === 0) {
+      await prisma.predictionRoom.create({
+        data: {
+          hostId: admin.id,
+          title: 'Champions League — Final Madrid vs Barca',
+          entryAmount: 10,
+          maxPlayers: 8,
+          isSimulation: true,
+          status: 'WAITING',
+          events: {
+            create: [
+              {
+                title: 'Quem vencerá a partida?',
+                sortOrder: 0,
+                options: {
+                  create: [
+                    { label: 'Real Madrid', sortOrder: 0 },
+                    { label: 'Barcelona', sortOrder: 1 },
+                    { label: 'Empate', sortOrder: 2 },
+                  ],
+                },
+              },
+              {
+                title: 'Quem marcará o primeiro gol?',
+                sortOrder: 1,
+                options: {
+                  create: [
+                    { label: 'Vini Jr', sortOrder: 0 },
+                    { label: 'Lewandowski', sortOrder: 1 },
+                    { label: 'Bellingham', sortOrder: 2 },
+                    { label: 'Outro', sortOrder: 3 },
+                  ],
+                },
+              },
+              {
+                title: 'Quantos gols no total?',
+                sortOrder: 2,
+                options: {
+                  create: [
+                    { label: '0 a 1', sortOrder: 0 },
+                    { label: '2 a 3', sortOrder: 1 },
+                    { label: '4 ou mais', sortOrder: 2 },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+      });
+      console.log('✅ 1 prediction room (Apostas demo)');
+    }
+  }
+
   console.log('🎉 Seed complete!');
 }
 

@@ -24,6 +24,8 @@ const options: swaggerJsdoc.Options = {
   apis: [
     path.join(__dirname, '../../modules/**/presentation/routes/*.ts'),
     path.join(__dirname, '../../modules/**/presentation/routes/*.js'),
+    path.join(__dirname, '../../modules/game-room/presentation/routes/game-room.routes.ts'),
+    path.join(__dirname, '../../modules/prediction/presentation/routes/prediction-room.routes.ts'),
   ],
 };
 
