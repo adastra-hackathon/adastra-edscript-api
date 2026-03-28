@@ -125,7 +125,7 @@ const ctrl = new GameRoomController();
  *       422:
  *         description: Validation error
  */
-router.post('/', authenticate, (req, res, next) => ctrl.create(req as any, res, next).catch(next));
+router.post('/', authenticate, (req, res, next) => ctrl.create(req as any, res).catch(next));
 
 /**
  * @swagger
@@ -156,7 +156,7 @@ router.post('/', authenticate, (req, res, next) => ctrl.create(req as any, res, 
  *                   items:
  *                     $ref: '#/components/schemas/GameRoom'
  */
-router.get('/', authenticate, (req, res, next) => ctrl.list(req as any, res, next).catch(next));
+router.get('/', authenticate, (req, res, next) => ctrl.list(req as any, res).catch(next));
 
 /**
  * @swagger
@@ -187,7 +187,7 @@ router.get('/', authenticate, (req, res, next) => ctrl.list(req as any, res, nex
  *       404:
  *         description: Room not found
  */
-router.get('/:id', authenticate, (req, res, next) => ctrl.getById(req as any, res, next).catch(next));
+router.get('/:id', authenticate, (req, res, next) => ctrl.getById(req as any, res).catch(next));
 
 /**
  * @swagger
@@ -222,7 +222,7 @@ router.get('/:id', authenticate, (req, res, next) => ctrl.getById(req as any, re
  *       422:
  *         description: Insufficient balance
  */
-router.post('/:id/join', authenticate, (req, res, next) => ctrl.join(req as any, res, next).catch(next));
+router.post('/:id/join', authenticate, (req, res, next) => ctrl.join(req as any, res).catch(next));
 
 /**
  * @swagger
@@ -255,7 +255,7 @@ router.post('/:id/join', authenticate, (req, res, next) => ctrl.join(req as any,
  *       409:
  *         description: Room is not in WAITING status
  */
-router.post('/:id/start', authenticate, (req, res, next) => ctrl.start(req as any, res, next).catch(next));
+router.post('/:id/start', authenticate, (req, res, next) => ctrl.start(req as any, res).catch(next));
 
 /**
  * @swagger
@@ -312,7 +312,7 @@ router.post('/:id/start', authenticate, (req, res, next) => ctrl.start(req as an
  *       409:
  *         description: Room is not in progress
  */
-router.post('/:id/finish', authenticate, (req, res, next) => ctrl.finish(req as any, res, next).catch(next));
+router.post('/:id/finish', authenticate, (req, res, next) => ctrl.finish(req as any, res).catch(next));
 
 /**
  * @swagger

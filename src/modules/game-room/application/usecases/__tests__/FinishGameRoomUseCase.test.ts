@@ -15,6 +15,7 @@ function makeRoom(overrides: Partial<GameRoomData> = {}): GameRoomData {
     prizePool: 60,
     platformFee: 0,
     winnerId: null,
+    isSimulation: false,
     createdAt: new Date(),
     updatedAt: new Date(),
     players: [
@@ -33,6 +34,7 @@ function makeRepo(overrides: Partial<IGameRoomRepository> = {}): IGameRoomReposi
     findById: jest.fn().mockResolvedValue(room),
     findAll: jest.fn().mockResolvedValue([room]),
     addPlayer: jest.fn().mockResolvedValue(room),
+    addBots: jest.fn().mockResolvedValue(room),
     start: jest.fn().mockResolvedValue(room),
     finish: jest.fn().mockResolvedValue({ ...room, status: 'FINISHED', winnerId: 'user-1' }),
     getWalletBalance: jest.fn().mockResolvedValue(100),
